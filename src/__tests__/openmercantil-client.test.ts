@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
-vi.mock('node-fetch', () => ({ default: vi.fn() }));
-
-import fetch from 'node-fetch';
 import { OpenMercantilClient, encodePathSegment } from '../openmercantil-client.js';
 
-const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
+
+/** Same shape as a native fetch network failure: TypeError with the socket error in `cause`. */
+function networkError(message: string, code?: string) {
+  return new TypeError('fetch failed', { cause: Object.assign(new Error(message), { code }) });
+}
 
 function res(status: number, body: string, headers: Record<string, string> = {}) {
   const lower = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
@@ -81,9 +84,7 @@ describe('OpenMercantilClient', () => {
   });
 
   it('turns a refused redirect into an explicit error', async () => {
-    fetchMock.mockRejectedValue(
-      Object.assign(new Error('uri requested responds with a redirect'), { type: 'no-redirect' })
-    );
+    fetchMock.mockRejectedValue(networkError('unexpected redirect'));
     const error = (await new OpenMercantilClient('omk_secret')
       .get('/api/v1/health')
       .catch((e: Error) => e)) as Error;
@@ -223,7 +224,7 @@ describe('OpenMercantilClient', () => {
   });
 
   it('retries connection-setup network errors', async () => {
-    const refused = Object.assign(new Error('refused'), { code: 'ECONNREFUSED' });
+    const refused = networkError('refused', 'ECONNREFUSED');
     fetchMock.mockRejectedValueOnce(refused).mockResolvedValueOnce(res(200, '{"ok":1}'));
     const client = new OpenMercantilClient();
     vi.spyOn(client as any, 'sleep').mockResolvedValue(undefined);
@@ -233,7 +234,7 @@ describe('OpenMercantilClient', () => {
   });
 
   it('does not retry ambiguous network errors', async () => {
-    fetchMock.mockRejectedValue(Object.assign(new Error('reset'), { code: 'ECONNRESET' }));
+    fetchMock.mockRejectedValue(networkError('reset', 'ECONNRESET'));
     await expect(new OpenMercantilClient().get('/x')).rejects.toThrow(/request failed: reset/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

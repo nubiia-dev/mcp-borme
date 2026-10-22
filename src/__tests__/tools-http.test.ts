@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('node-fetch', () => ({ default: vi.fn() }));
-
-import fetch from 'node-fetch';
 import { OpenMercantilClient } from '../openmercantil-client.js';
 import { getCompanyTools } from '../tools/companies.js';
 import { getBulletinTools } from '../tools/bulletin.js';
 import { getLegalTools } from '../tools/legal.js';
 
-const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
 const res = (status: number, body: string) => ({
   ok: status >= 200 && status < 300,
   status,
