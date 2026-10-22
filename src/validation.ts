@@ -206,7 +206,7 @@ export const getDailySummarySchema = z.object({
     .max(80)
     .optional()
     .describe(
-      'Only this province, e.g. "Madrid" or "Málaga". Case/accent-insensitive; a partial name works ("alava" finds "Araba/Álava"). If nothing matches, the response lists available_provinces.'
+      'Only this province, e.g. "Madrid" or "Málaga". Case/accent-insensitive; a partial name of 3+ characters works ("alava" finds "Araba/Álava"). If nothing matches, the response lists available_provinces.'
     ),
   section: z
     .enum(['1', '2'])

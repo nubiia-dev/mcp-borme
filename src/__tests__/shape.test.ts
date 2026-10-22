@@ -118,6 +118,26 @@ describe('summarizeDaily', () => {
     expect(partial.total_acts).toBe(3);
   });
 
+  it('does not substring-match queries shorter than 3 characters, but exact matches work at any length', () => {
+    const data = {
+      sections: { '1': { Ávila: acts(1), León: acts(2), Lugo: acts(1), Álava: acts(1) } },
+    };
+    const short = summarizeDaily(data, { province: 'la', limit: 10 }) as any;
+    expect(short.total_acts).toBe(0);
+    expect(short.note).toMatch(/No province matches "la"/);
+    expect(short.available_provinces).toHaveLength(4);
+    const exactShort = summarizeDaily(
+      { sections: { '1': { Ja: acts(3) } } },
+      {
+        province: 'JA',
+        limit: 10,
+      }
+    ) as any;
+    expect(exactShort.total_acts).toBe(3);
+    const three = summarizeDaily(data, { province: 'lav', limit: 10 }) as any;
+    expect(three.counts_by_section_and_province).toEqual({ '1': { Álava: 1 } });
+  });
+
   it('prefers an exact match over substring matches', () => {
     const data = { sections: { '1': { Palencia: acts(1), 'La Palencia Alta': acts(1) } } };
     const out = summarizeDaily(data, { province: 'palencia', limit: 10 }) as any;

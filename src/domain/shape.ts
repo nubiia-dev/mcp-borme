@@ -69,6 +69,9 @@ function fold(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
+/** Shortest query accepted for partial province matches (exact matches work at any length). */
+const MIN_SUBSTRING_CHARS = 3;
+
 /**
  * Picks the provinces that match a folded query: exact (accent/case-insensitive)
  * first; if none, any whose name contains the query, so "alava" finds "Araba/Álava".
@@ -76,11 +79,13 @@ function fold(text: string): string {
 function matchProvinces(names: string[], folded: string): Set<string> {
   const exact = names.filter((name) => fold(name) === folded);
   if (exact.length > 0) return new Set(exact);
+  // Substring matching needs enough characters to be meaningful: "a" would match everything.
+  if (folded.length < MIN_SUBSTRING_CHARS) return new Set();
   return new Set(names.filter((name) => fold(name).includes(folded)));
 }
 
 export interface DailyOptions {
-  /** Keep only provinces matching this name (accent/case-insensitive; exact first, then substring). */
+  /** Keep only provinces matching this name (accent/case-insensitive; exact first, then substring of 3+ characters). */
   province?: string;
   /** BORME section: "1" (Sección Primera, actos inscritos) or "2" (Sección Segunda, anuncios y avisos). */
   section?: string;
