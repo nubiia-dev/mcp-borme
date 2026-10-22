@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_MAX_RESPONSE_CHARS,
+  isUnset,
+  normalizeApiKey,
   DEFAULT_REQUESTS_PER_MINUTE,
   parseBaseUrl,
   parseMaxResponseChars,
@@ -82,5 +84,32 @@ describe('serializeResult', () => {
     expect(parsed.original_chars).toBe(JSON.stringify(big).length);
     expect(parsed.hint).toMatch(/Narrow the request/);
     expect(JSON.stringify(big).startsWith(parsed.partial_json)).toBe(true);
+  });
+});
+
+describe('unset values (blank or unsubstituted ${...} placeholders)', () => {
+  it.each([undefined, '', '  ', '${user_config.x}', ' ${user_config.x}'])('isUnset(%j)', (raw) => {
+    expect(isUnset(raw)).toBe(true);
+  });
+
+  it('keeps real values', () => {
+    expect(isUnset('omk_abc')).toBe(false);
+    expect(normalizeApiKey('  omk_abc ')).toBe('omk_abc');
+    expect(normalizeApiKey('${user_config.k}')).toBe('');
+  });
+
+  it('numeric and URL settings ignore placeholders without warning or failing', () => {
+    expect(parsePositiveInt('${user_config.n}', 'X', 7)).toEqual({ value: 7 });
+    expect(parseBaseUrl('${user_config.url}')).toBeUndefined();
+  });
+
+  it('never echoes a URL that may embed credentials', () => {
+    expect(() => parseBaseUrl('ht!tp://user:s3cret@host')).toThrow(/not a valid URL/);
+    try {
+      parseBaseUrl('ht!tp://user:s3cret@host');
+    } catch (error) {
+      expect((error as Error).message).not.toContain('s3cret');
+    }
+    expect(parseBaseUrl('https://user:s3cret@example.org/x')).toBe('https://example.org');
   });
 });

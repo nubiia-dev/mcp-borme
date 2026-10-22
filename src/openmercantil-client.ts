@@ -1,5 +1,7 @@
 import fetch, { RequestInit } from 'node-fetch';
 
+import { normalizeApiKey } from './utils/config.js';
+
 /**
  * OpenMercantil publishes Spanish company data derived from the BORME. Every
  * endpoint is a public GET under `https://openmercantil.es/api/v1/...`.
@@ -74,7 +76,7 @@ export class OpenMercantilClient {
    * @param apiKey - Optional `omk_*` API key. Empty/undefined means anonymous (free tier).
    */
   constructor(apiKey = '', options: OpenMercantilClientOptions = {}) {
-    this.apiKey = apiKey.trim();
+    this.apiKey = normalizeApiKey(apiKey);
     this.host = (options.host ?? DEFAULT_HOST).replace(/\/+$/, '');
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
@@ -209,6 +211,9 @@ export class OpenMercantilClient {
       const options: RequestInit = {
         method: 'GET',
         headers,
+        // Never follow redirects: node-fetch only strips `authorization` and `cookie` when a
+        // redirect leaves the origin, so X-API-Key would be replayed to the other host.
+        redirect: 'error',
         signal: controller.signal as RequestInit['signal'],
       };
 
@@ -282,6 +287,12 @@ export class OpenMercantilClient {
           throw new ApiError(
             `OpenMercantil request timed out after ${Math.round(this.timeoutMs / 1000)}s. It was ` +
               `not retried to avoid wasting request quota.`
+          );
+        }
+        if ((err as { type?: string })?.type === 'no-redirect') {
+          throw new ApiError(
+            `OpenMercantil answered with a redirect, which this client refuses to follow so the ` +
+              `API key is never sent to another host. Check OPENMERCANTIL_BASE_URL.`
           );
         }
         const code = err?.code;

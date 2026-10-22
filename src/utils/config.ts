@@ -16,6 +16,22 @@ export const DEFAULT_REQUESTS_PER_MINUTE = 60;
 export const DEFAULT_MAX_RESPONSE_CHARS = 60_000;
 const MIN_MAX_RESPONSE_CHARS = 1_000;
 
+/**
+ * True for values that are really "not configured": empty/blank, or an
+ * unsubstituted template placeholder such as `${user_config.openmercantil_api_key}`.
+ * An MCPB host that does not fill an optional field could hand the literal
+ * placeholder to the process; treating it as a key would send a bogus
+ * X-API-Key and turn every anonymous call into a 401.
+ */
+export function isUnset(raw: string | undefined): boolean {
+  return raw === undefined || raw.trim() === '' || raw.trim().startsWith('${');
+}
+
+/** Returns the trimmed API key, or an empty string (anonymous tier) when it is unset. */
+export function normalizeApiKey(raw: string | undefined): string {
+  return isUnset(raw) ? '' : (raw as string).trim();
+}
+
 export interface ParsedNumber {
   value: number;
   /** Set when the raw value was invalid and the default was used. */
@@ -36,7 +52,7 @@ export function parsePositiveInt(
   def: number,
   min = 1
 ): ParsedNumber {
-  if (raw === undefined || raw.trim() === '') return { value: def };
+  if (isUnset(raw)) return { value: def };
   const value = Number(raw);
   if (!Number.isInteger(value) || value < min) {
     return {
@@ -62,12 +78,13 @@ export const parseMaxResponseChars = (raw: string | undefined) =>
  * @throws Error when the value is not a URL or uses an insecure remote scheme.
  */
 export function parseBaseUrl(raw: string | undefined): string | undefined {
-  if (raw === undefined || raw.trim() === '') return undefined;
+  if (isUnset(raw)) return undefined;
   let url: URL;
   try {
-    url = new URL(raw.trim());
+    url = new URL((raw as string).trim());
   } catch {
-    throw new Error(`${BASE_URL_ENV}="${raw}" is not a valid URL.`);
+    // Never echo the value: a URL can embed credentials (https://user:pass@host).
+    throw new Error(`${BASE_URL_ENV} is not a valid URL.`);
   }
   const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) {

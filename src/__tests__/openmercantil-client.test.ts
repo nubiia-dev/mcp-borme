@@ -74,6 +74,35 @@ describe('OpenMercantilClient', () => {
     });
   });
 
+  it('never follows redirects, so the API key cannot be replayed to another host', async () => {
+    fetchMock.mockResolvedValue(res(200, '{}'));
+    await new OpenMercantilClient('omk_secret').get('/api/v1/health');
+    expect(fetchMock.mock.calls[0][1].redirect).toBe('error');
+  });
+
+  it('turns a refused redirect into an explicit error', async () => {
+    fetchMock.mockRejectedValue(
+      Object.assign(new Error('uri requested responds with a redirect'), { type: 'no-redirect' })
+    );
+    const error = (await new OpenMercantilClient('omk_secret')
+      .get('/api/v1/health')
+      .catch((e: Error) => e)) as Error;
+    expect(error.message).toMatch(/refuses to follow/);
+    expect(error.message).not.toContain('omk_secret');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['', '   ', '${user_config.openmercantil_api_key}'])(
+    'treats the unset key %j as anonymous (no X-API-Key header)',
+    async (key) => {
+      fetchMock.mockResolvedValue(res(200, '{}'));
+      const client = new OpenMercantilClient(key);
+      await client.get('/x');
+      expect(client.authenticated).toBe(false);
+      expect(fetchMock.mock.calls[0][1].headers['X-API-Key']).toBeUndefined();
+    }
+  );
+
   it('honours a custom host and trims trailing slashes', async () => {
     fetchMock.mockResolvedValue(res(200, '{}'));
     await new OpenMercantilClient('', { host: 'http://localhost:8080//' }).get('/api/v1/stats');
