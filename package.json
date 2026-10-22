@@ -59,7 +59,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "node-fetch": "^3.3.2",
     "zod": "^4.4.3"
   },
