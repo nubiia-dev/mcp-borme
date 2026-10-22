@@ -131,6 +131,8 @@ describe('legal schemas', () => {
     expect(() => validateInput(getLegalArticleSchema, { norm: 'x', n: '..' })).toThrow(/\.\./);
     expect(() => validateInput(getLegalArticleSchema, { norm: 'x', n: '1/2' })).toThrow();
     expect(() => validateInput(getLegalArticleSchema, { norm: '../x', n: '1' })).toThrow();
+    expect(() => validateInput(getLegalArticleSchema, { norm: 'x', n: '.hidden' })).toThrow();
+    expect(() => validateInput(getLegalArticleSchema, { norm: 'x', n: '-1' })).toThrow();
   });
 
   it('the act map slug is optional', () => {

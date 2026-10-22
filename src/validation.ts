@@ -300,7 +300,10 @@ export const getLegalArticleSchema = z.object({
     .describe('Norm slug, e.g. "codigo-de-comercio".'),
   n: z
     .string()
-    .regex(/^[0-9a-z\-.]+$/, 'must be digits with an optional bis/ter suffix joined by a hyphen')
+    .regex(
+      /^[0-9][0-9a-z\-.]*$/,
+      'must start with a digit and may add a bis/ter suffix joined by a hyphen, e.g. "160-bis"'
+    )
     .refine((v) => !v.includes('..'), 'must not contain ".."')
     .describe('Article number; a bis/ter suffix is joined with a hyphen, e.g. "160-bis".'),
 });
