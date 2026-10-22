@@ -49,10 +49,6 @@ jobs:
           # No NPM_TOKEN: @semantic-release/npm exchanges the job's OIDC identity (id-token: write)
           # for a short-lived publish credential via the package's npm Trusted Publisher
           # (nubiia-dev/mcp-borme, workflow release.yml). Provenance stays enabled below.
-          # TODO: temporary bootstrap for the first publish (the package does not exist on npm yet, so
-          # no Trusted Publisher can be configured). Revert this line, and delete the NPM_TOKEN
-          # secret, after 1.0.0 is published and the Trusted Publisher is configured.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
         run: npx semantic-release
 
