@@ -56,6 +56,26 @@ jobs:
       # workflows con eventos generados por su propio token: publish-mcp.yml
       # nunca arrancaría solo. Por eso la publicación al registro se encadena
       # aquí, condicionada a que esta ejecución haya publicado algo.
+      # npm tarda unos segundos en servir una versión recién publicada y el
+      # registro MCP la valida contra npm: sin esta espera, publish falla con
+      # "version not found" (pasó en mcp-borme 1.0.1).
+      - name: Wait for the version to be visible on npm
+        if: steps.release.outputs.released == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          for i in $(seq 1 30); do
+            if npm view "$PKG@$VERSION" version >/dev/null 2>&1; then
+              echo "$PKG@$VERSION is available on npm"
+              exit 0
+            fi
+            echo "Waiting for $PKG@$VERSION on npm ($i/30)..."
+            sleep 10
+          done
+          echo "::error::$PKG@$VERSION did not appear on npm after 5 minutes"
+          exit 1
+
       - name: Download MCP Publisher
         if: steps.release.outputs.released == 'true'
         run: |
