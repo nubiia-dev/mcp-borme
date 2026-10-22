@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/nubiia-dev/mcp-borme/compare/v1.0.0...v1.0.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* stop shipping compiled tests in the npm package ([2a51b60](https://github.com/nubiia-dev/mcp-borme/commit/2a51b6082dedf24d9e3b76c7fbfc46c4c80232d1))
+
 # 1.0.0 (2026-10-22)
 
 
