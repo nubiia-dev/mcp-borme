@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.nubiia-dev/mcp-borme",
   "description": "OpenMercantil (BORME): 37 read-only tools for Spanish company search, officers, sectors and tenders",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/nubiia-dev/mcp-borme",
   "license": "MIT",
   "author": {
@@ -17,7 +17,7 @@
     {
       "registryType": "npm",
       "identifier": "@nubiia/mcp-borme",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

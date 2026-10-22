@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/nubiia-dev/mcp-borme/compare/v1.0.1...v1.0.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* use the native fetch and drop node-fetch ([3030501](https://github.com/nubiia-dev/mcp-borme/commit/3030501c1d6b4a627915a54bada3fb5174805126))
+
 ## [1.0.1](https://github.com/nubiia-dev/mcp-borme/compare/v1.0.0...v1.0.1) (2026-10-22)
 
 
