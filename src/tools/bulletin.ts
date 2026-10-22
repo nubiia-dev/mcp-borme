@@ -12,7 +12,9 @@ export function getBulletinTools(client: OpenMercantilClient) {
         'and province (company, act type, company slug). The raw day can hold thousands of ' +
         'acts, so the response gives exact counts per section and province plus the first ' +
         '`limit` acts per province (default 10). Narrow with `province` and/or `section` ' +
-        'before raising the limit. The BORME is not published on Sundays or national holidays ' +
+        'before raising the limit. `province` ignores case and accents and accepts part of a ' +
+        'name ("alava" finds "Araba/Álava"); if nothing matches, the response lists ' +
+        '`available_provinces`. The BORME is not published on Sundays or national holidays ' +
         '(404), and this dataset may lag behind today: check borme_get_health ' +
         '(`latest_borme_processed`) if a recent date is missing.',
       schema: getDailySummarySchema,

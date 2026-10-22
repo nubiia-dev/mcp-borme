@@ -69,8 +69,18 @@ function fold(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
+/**
+ * Picks the provinces that match a folded query: exact (accent/case-insensitive)
+ * first; if none, any whose name contains the query, so "alava" finds "Araba/Álava".
+ */
+function matchProvinces(names: string[], folded: string): Set<string> {
+  const exact = names.filter((name) => fold(name) === folded);
+  if (exact.length > 0) return new Set(exact);
+  return new Set(names.filter((name) => fold(name).includes(folded)));
+}
+
 export interface DailyOptions {
-  /** Keep only provinces whose name matches (accent/case-insensitive, exact). */
+  /** Keep only provinces matching this name (accent/case-insensitive; exact first, then substring). */
   province?: string;
   /** BORME section: "1" (Sección Primera, actos inscritos) or "2" (Sección Segunda, anuncios y avisos). */
   section?: string;
@@ -90,6 +100,12 @@ export function summarizeDaily(raw: unknown, options: DailyOptions): unknown {
   if (!isObject(cleaned) || !isObject(cleaned.sections)) return cleaned;
 
   const wantedProvince = options.province ? fold(options.province) : undefined;
+  const available = new Set<string>();
+  for (const [section, provinces] of Object.entries(cleaned.sections)) {
+    if (options.section && section !== options.section) continue;
+    if (isObject(provinces)) Object.keys(provinces).forEach((name) => available.add(name));
+  }
+  const matches = wantedProvince ? matchProvinces([...available], wantedProvince) : undefined;
   const counts: Record<string, Record<string, number>> = {};
   const sections: Record<string, Record<string, unknown[]>> = {};
   let totalActs = 0;
@@ -99,7 +115,7 @@ export function summarizeDaily(raw: unknown, options: DailyOptions): unknown {
     if (options.section && section !== options.section) continue;
     if (!isObject(provinces)) continue;
     for (const [province, acts] of Object.entries(provinces)) {
-      if (wantedProvince && fold(province) !== wantedProvince) continue;
+      if (matches && !matches.has(province)) continue;
       if (!Array.isArray(acts)) continue;
       (counts[section] ??= {})[province] = acts.length;
       totalActs += acts.length;
@@ -111,6 +127,7 @@ export function summarizeDaily(raw: unknown, options: DailyOptions): unknown {
 
   const { sections: _omit, ...rest } = cleaned;
   void _omit;
+  const noProvinceMatch = Boolean(wantedProvince) && matches?.size === 0;
   return {
     ...rest,
     total_acts: totalActs,
@@ -118,6 +135,14 @@ export function summarizeDaily(raw: unknown, options: DailyOptions): unknown {
     truncated: returnedActs < totalActs,
     counts_by_section_and_province: counts,
     sections,
+    ...(noProvinceMatch
+      ? {
+          note:
+            `No province matches "${options.province}" in this bulletin (it may simply have no ` +
+            `acts that day). Pick one of available_provinces.`,
+          available_provinces: [...available].sort((a, b) => a.localeCompare(b, 'es')),
+        }
+      : {}),
     ...(returnedActs < totalActs
       ? {
           note:

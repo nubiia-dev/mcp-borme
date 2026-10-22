@@ -105,6 +105,38 @@ describe('summarizeDaily', () => {
     expect(out.note).toBeUndefined();
   });
 
+  it('matches a partial name when there is no exact match ("alava" finds "Araba/Álava")', () => {
+    const withAlava = {
+      sections: {
+        '1': { 'Araba/Álava': acts(2), Madrid: acts(1), 'Santa Cruz de Tenerife': acts(3) },
+      },
+    };
+    const out = summarizeDaily(withAlava, { province: 'alava', limit: 10 }) as any;
+    expect(out.counts_by_section_and_province).toEqual({ '1': { 'Araba/Álava': 2 } });
+    expect(out.note).toBeUndefined();
+    const partial = summarizeDaily(withAlava, { province: 'tenerife', limit: 10 }) as any;
+    expect(partial.total_acts).toBe(3);
+  });
+
+  it('prefers an exact match over substring matches', () => {
+    const data = { sections: { '1': { Palencia: acts(1), 'La Palencia Alta': acts(1) } } };
+    const out = summarizeDaily(data, { province: 'palencia', limit: 10 }) as any;
+    expect(out.total_acts).toBe(1);
+    expect(Object.keys(out.sections['1'])).toEqual(['Palencia']);
+  });
+
+  it('explains an unmatched province and lists the available ones', () => {
+    const out = summarizeDaily(daily, { province: 'Atlantis', limit: 10 }) as any;
+    expect(out.total_acts).toBe(0);
+    expect(out.note).toMatch(/No province matches "Atlantis"/);
+    expect(out.available_provinces).toEqual(['Barcelona', 'Madrid', 'Málaga', 'National']);
+  });
+
+  it('available_provinces respects the section filter', () => {
+    const out = summarizeDaily(daily, { province: 'zzz', section: '2', limit: 10 }) as any;
+    expect(out.available_provinces).toEqual(['National']);
+  });
+
   it('filters by section', () => {
     const out = summarizeDaily(daily, { section: '2', limit: 10 }) as any;
     expect(Object.keys(out.sections)).toEqual(['2']);
