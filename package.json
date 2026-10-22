@@ -21,7 +21,8 @@
     "format:check": "prettier --check src",
     "prepare": "husky",
     "prepublishOnly": "npm run clean && npm run build",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "validate:server": "node scripts/validate-server-json.mjs"
   },
   "keywords": [
     "mcp",
@@ -74,6 +75,8 @@
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
     "@vitest/coverage-v8": "^4.0.15",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
