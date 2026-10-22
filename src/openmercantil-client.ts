@@ -1,5 +1,3 @@
-import fetch, { RequestInit } from 'node-fetch';
-
 import { normalizeApiKey } from './utils/config.js';
 
 /**
@@ -211,10 +209,10 @@ export class OpenMercantilClient {
       const options: RequestInit = {
         method: 'GET',
         headers,
-        // Never follow redirects: node-fetch only strips `authorization` and `cookie` when a
-        // redirect leaves the origin, so X-API-Key would be replayed to the other host.
+        // Never follow redirects: fetch only strips `authorization` when a redirect
+        // leaves the origin, so X-API-Key would be replayed to the other host.
         redirect: 'error',
-        signal: controller.signal as RequestInit['signal'],
+        signal: controller.signal,
       };
 
       try {
@@ -282,27 +280,30 @@ export class OpenMercantilClient {
         if (error instanceof ApiError) {
           throw error;
         }
-        const err = error as NodeJS.ErrnoException & { name?: string };
+        // Native fetch rejects with `TypeError: fetch failed` and puts the socket
+        // error (with its `code`) in `cause`; aborts surface directly as AbortError.
+        const err = error as Error & { cause?: NodeJS.ErrnoException };
+        const cause = err?.cause;
         if (err?.name === 'AbortError') {
           throw new ApiError(
             `OpenMercantil request timed out after ${Math.round(this.timeoutMs / 1000)}s. It was ` +
               `not retried to avoid wasting request quota.`
           );
         }
-        if ((err as { type?: string })?.type === 'no-redirect') {
+        if (cause?.message === 'unexpected redirect') {
           throw new ApiError(
             `OpenMercantil answered with a redirect, which this client refuses to follow so the ` +
               `API key is never sent to another host. Check OPENMERCANTIL_BASE_URL.`
           );
         }
-        const code = err?.code;
+        const code = cause?.code;
         if (code && SAFE_TO_RETRY_NETWORK_CODES.has(code) && !isLastAttempt) {
           lastError = err;
           await this.sleep(this.backoffDelays[attempt]);
           continue;
         }
         throw new ApiError(
-          `OpenMercantil request failed: ${this.sanitize(err?.message ?? String(error))}`
+          `OpenMercantil request failed: ${this.sanitize(cause?.message ?? err?.message ?? String(error))}`
         );
       } finally {
         clearTimeout(timer);

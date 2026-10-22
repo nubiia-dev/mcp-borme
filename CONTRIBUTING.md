@@ -9,8 +9,8 @@ Thank you for your interest in contributing to MCP BORME!
 3. Build: `npm run build`
 4. Run tests: `npm test`
 
-The test suite runs entirely against `src/__tests__/mock-client.ts` and a mocked
-`node-fetch` — no OpenMercantil account, API key or network access is required to develop
+The test suite runs entirely against `src/__tests__/mock-client.ts` and a stubbed
+global `fetch` — no OpenMercantil account, API key or network access is required to develop
 or test this project.
 
 ## Code Style
@@ -68,7 +68,7 @@ npm run test:coverage # Run tests with coverage
 
 `src/__tests__/tools.test.ts` checks that every tool calls the right endpoint with the right
 parameters against `mock-client.ts`; `openmercantil-client.test.ts` and `tools-http.test.ts`
-exercise the real HTTP client with a mocked `node-fetch`; `shape.test.ts` covers response
+exercise the real HTTP client with a stubbed global `fetch`; `shape.test.ts` covers response
 trimming and `validation.test.ts` the input bounds. Tests never need an API key.
 
 ## Working against the real OpenMercantil API
