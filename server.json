@@ -1,0 +1,52 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.nubiia-dev/mcp-borme",
+  "description": "OpenMercantil (BORME): 37 read-only MCP tools for Spanish company search and reports, officers, daily bulletins, sectors, public procurement and mercantile law",
+  "version": "0.0.0",
+  "homepage": "https://github.com/nubiia-dev/mcp-borme",
+  "license": "MIT",
+  "author": {
+    "name": "Nubiia",
+    "url": "https://nubiia.es"
+  },
+  "repository": {
+    "url": "https://github.com/nubiia-dev/mcp-borme",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@nubiia/mcp-borme",
+      "version": "0.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OPENMERCANTIL_API_KEY",
+          "description": "Optional OpenMercantil API key (omk_...). Without it the server uses the anonymous free tier (60 requests/min, 200/day per IP).",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "OPENMERCANTIL_MAX_REQUESTS_PER_MINUTE",
+          "description": "Local cap on requests per minute across all tools. Defaults to 60 (the anonymous tier limit); raise it for paid plans.",
+          "format": "number",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "60"
+        },
+        {
+          "name": "OPENMERCANTIL_MAX_RESPONSE_CHARS",
+          "description": "Maximum size of a tool response in characters; larger results are cut with a notice. Defaults to 60000.",
+          "format": "number",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "60000"
+        }
+      ]
+    }
+  ]
+}

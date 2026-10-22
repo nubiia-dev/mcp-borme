@@ -1,0 +1,83 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.3",
+  "name": "mcp-borme",
+  "display_name": "BORME (OpenMercantil) MCP Server",
+  "version": "0.0.0",
+  "description": "MCP Server for the BORME (Registro Mercantil) through the OpenMercantil API - search Spanish companies, read their registry history and officers, daily bulletins, sectors, public procurement and mercantile law",
+  "long_description": "A Model Context Protocol (MCP) server that gives AI assistants like Claude access to the BORME (Boletín Oficial del Registro Mercantil) through the public OpenMercantil API. Search Spanish companies by name or CIF, read their registry events, officers and documentary relationships, browse the daily bulletin by province, map sectors by CNAE, look at public procurement notices and consult the mercantile-law norms that govern each registry act.\n\n**Features:**\n- 37 read-only tools; nothing is written to OpenMercantil or to disk\n- Works without an account on OpenMercantil's anonymous free tier; an optional API key raises the quota\n- Responses are trimmed for an assistant's context window (recent events first, per-province caps) and always say what was left out\n- Attribution and documentary-only caveats from the source are preserved\n\n**Data is informational and derived from the BORME; it is not an official registry extract.**",
+
+  "author": {
+    "name": "Nubiia",
+    "email": "hola@nubiia.es",
+    "url": "https://nubiia.es"
+  },
+
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "OPENMERCANTIL_API_KEY": "${user_config.openmercantil_api_key}",
+        "OPENMERCANTIL_MAX_REQUESTS_PER_MINUTE": "${user_config.openmercantil_max_requests_per_minute}"
+      }
+    }
+  },
+
+  "tools_generated": true,
+
+  "keywords": [
+    "borme",
+    "registro-mercantil",
+    "openmercantil",
+    "spain",
+    "companies",
+    "kyc",
+    "business-registry",
+    "public-procurement",
+    "api",
+    "mcp",
+    "claude"
+  ],
+
+  "license": "MIT",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nubiia-dev/mcp-borme.git"
+  },
+
+  "homepage": "https://github.com/nubiia-dev/mcp-borme",
+  "documentation": "https://github.com/nubiia-dev/mcp-borme#readme",
+  "support": "https://github.com/nubiia-dev/mcp-borme/issues",
+
+  "privacy_policies": ["https://nubiia.es/privacy"],
+
+  "user_config": {
+    "openmercantil_api_key": {
+      "type": "string",
+      "title": "OpenMercantil API Key (optional)",
+      "description": "Optional omk_... key from openmercantil.es. Leave empty to use the anonymous free tier (60 requests/minute, 200/day per IP).",
+      "required": false,
+      "sensitive": true
+    },
+    "openmercantil_max_requests_per_minute": {
+      "type": "number",
+      "title": "Max requests per minute",
+      "description": "Local cap on requests per minute across all tools. Defaults to 60, the anonymous tier limit; raise it if your plan allows more.",
+      "required": false,
+      "sensitive": false,
+      "default": 60
+    }
+  },
+
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=22.14.0"
+    }
+  }
+}
