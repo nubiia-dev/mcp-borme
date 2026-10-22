@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "mcp-borme",
   "display_name": "BORME (OpenMercantil) MCP Server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP Server for the BORME (Registro Mercantil) through the OpenMercantil API - search Spanish companies, read their registry history and officers, daily bulletins, sectors, public procurement and mercantile law",
   "long_description": "A Model Context Protocol (MCP) server that gives AI assistants like Claude access to the BORME (Boletín Oficial del Registro Mercantil) through the public OpenMercantil API. Search Spanish companies by name or CIF, read their registry events, officers and documentary relationships, browse the daily bulletin by province, map sectors by CNAE, look at public procurement notices and consult the mercantile-law norms that govern each registry act.\n\n**Features:**\n- 37 read-only tools; nothing is written to OpenMercantil or to disk\n- Works without an account on OpenMercantil's anonymous free tier; an optional API key raises the quota\n- Responses are trimmed for an assistant's context window (recent events first, per-province caps) and always say what was left out\n- Attribution and documentary-only caveats from the source are preserved\n\n**Data is informational and derived from the BORME; it is not an official registry extract.**",
 
