@@ -21,7 +21,8 @@
       "args": ["${__dirname}/dist/index.js"],
       "env": {
         "OPENMERCANTIL_API_KEY": "${user_config.openmercantil_api_key}",
-        "OPENMERCANTIL_MAX_REQUESTS_PER_MINUTE": "${user_config.openmercantil_max_requests_per_minute}"
+        "OPENMERCANTIL_MAX_REQUESTS_PER_MINUTE": "${user_config.openmercantil_max_requests_per_minute}",
+        "OPENMERCANTIL_MAX_RESPONSE_CHARS": "${user_config.openmercantil_max_response_chars}"
       }
     }
   },
@@ -70,6 +71,14 @@
       "required": false,
       "sensitive": false,
       "default": 60
+    },
+    "openmercantil_max_response_chars": {
+      "type": "number",
+      "title": "Max response size (characters)",
+      "description": "Maximum size of one tool response; larger results are cut with a notice. Defaults to 60000.",
+      "required": false,
+      "sensitive": false,
+      "default": 60000
     }
   },
 
